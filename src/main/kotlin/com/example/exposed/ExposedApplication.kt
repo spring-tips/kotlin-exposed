@@ -11,13 +11,12 @@ import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.context.annotation.ImportRuntimeHints
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID.randomUUID
 
-@ImportRuntimeHints(Hints::class)
+//@ImportRuntimeHints(ExposedHints::class)
 @SpringBootApplication
 class ExposedApplication
 
@@ -27,7 +26,7 @@ fun main(args: Array<String>) {
 
 @Component
 @Transactional
-class Go : ApplicationRunner {
+class Demo : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
 
@@ -86,14 +85,13 @@ object Customers : IntIdTable("customers") {
 }
 
 
-class Hints : RuntimeHintsRegistrar {
+class ExposedHints : RuntimeHintsRegistrar {
 
     override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
-        println("running the Exposed ORM hints!")
-        val classes = arrayOf(
+
+        arrayOf(
                 org.jetbrains.exposed.spring.DatabaseInitializer::class,
                 org.jetbrains.exposed.spring.SpringTransactionManager::class,
-
                 java.util.Collections::class,
                 Column::class,
                 Database::class,
@@ -141,20 +139,15 @@ class Hints : RuntimeHintsRegistrar {
                 kotlin.jvm.functions.FunctionN::class
             )
             .map {  it.java }
-        val mcs = MemberCategory.values()
-        classes.forEach {
-            hints.reflection().registerType(it, *mcs)
-        }
+            .forEach {
+                hints.reflection().registerType(it, *MemberCategory.values())
+            }
 
-        val resources = listOf("META-INF/services/org.jetbrains.exposed.dao.id.EntityIDFactory",
+        arrayOf("META-INF/services/org.jetbrains.exposed.dao.id.EntityIDFactory",
                 "META-INF/services/org.jetbrains.exposed.sql.DatabaseConnectionAutoRegistration",
                 "META-INF/services/org.jetbrains.exposed.sql.statements.GlobalStatementInterceptor")
                 .map { ClassPathResource(it) }
-        resources.forEach {
-            hints.resources().registerResource(it)
-        }
-
-
+                .forEach { hints.resources().registerResource(it) }
     }
 
 }
