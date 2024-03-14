@@ -70,7 +70,6 @@ data class Customer(val id: Int?, val name: String)
 data class Order(val id: Int, val sku: String)
 
 object Orders : IntIdTable("orders") {
-
     val sku = text("sku")
     val customerId = reference("customerId", Customers) // This creates the "1 to many" relationship
 }
